@@ -7,7 +7,7 @@ pg.init()
 display_width = 600
 display_height = 400
 jump_vel = 40
-crate_vel = 30
+crate_vel = 25
 bg_vel = 10
 g = 10
 max_crate = 3
