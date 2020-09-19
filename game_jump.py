@@ -8,6 +8,7 @@ display_width = 600
 display_height = 400
 jump_vel = 40
 crate_vel = 30
+bg_vel = 10
 g = 10
 max_crate = 3
 obj_y = 300
@@ -36,6 +37,7 @@ stone_img = pg.image.load('images/stone.png')
 stone_img = pg.transform.scale(stone_img, (40, 45))
 
 base_img = pg.image.load('images/base.jpeg')
+bg_img = pg.image.load('images/bg.png')
 
 win = pg.display.set_mode((display_width, display_height))
 pg.display.set_caption("aryamaan chutiya running")
@@ -125,13 +127,14 @@ class plant(object):
 
 
 class crate_obj(object):
-    def __init__(self, x, y, img):
+    def __init__(self, x, y, img,vel):
         self.x = x
         self.y = y
         self.img = img
+        self.vel = vel
 
     def move(self):
-        self.x -= crate_vel
+        self.x -= self.vel
 
     def draw(self):
         win.blit(self.img, (self.x, self.y))
@@ -140,12 +143,15 @@ class crate_obj(object):
 def redrawgamewindow():
     win.fill((0, 0, 0))
 
+    for b in background:
+        b.draw()
+
     for b in base:
         b.draw()
 
-    plant.draw()
     for crate in crates:
         crate.draw()
+    plant.draw()
 
     num_print(win, score, 300, 30)
     pg.display.update()
@@ -155,8 +161,9 @@ run = True
 plant = plant(100, obj_y)
 crates = []
 base = []
-base.append(crate_obj(0, 300, base_img))
-
+base.append(crate_obj(0, 300, base_img,crate_vel))
+background = []
+background.append(crate_obj(0,-100,bg_img,bg_vel))
 while run:
     clock.tick(14)
 
@@ -176,15 +183,19 @@ while run:
         temp_img = random.choice([chest_img, stone_img, crate_img])
 
         if len(crates) != 0:
-            new_crate = crate_obj(crates[-1].x + random.randint(300, 400), obj_y + 20, temp_img)
+            new_crate = crate_obj(crates[-1].x + random.randint(300, 400), obj_y + 20, temp_img, crate_vel)
             crates.append(new_crate)
         if len(crates) == 0:
-            new_crate = crate_obj(700, obj_y + 20, temp_img)
+            new_crate = crate_obj(700, obj_y + 20, temp_img, crate_vel)
             crates.append(new_crate)
 
     if len(base) <= max_crate:
-        new_base = crate_obj(base[-1].x + 336, 300, base_img)
+        new_base = crate_obj(base[-1].x + 336, 300, base_img, crate_vel)
         base.append(new_base)
+    
+    if len(background) <= 5:
+        new_bg = crate_obj(background[-1].x + 288, -100, bg_img, bg_vel)
+        background.append(new_bg)
 
     for crate in crates:
         if crate.x < 0:
@@ -192,12 +203,17 @@ while run:
             score += 1
             crate_vel += 0.5
         if collide(plant.img, crate_img, plant.x, plant.y, crate.x, crate.y):
+            pg.time.delay(100)
             quit()
         crate.move()
 
     for b in base:
         if b.x < -336:
             base.pop(base.index(b))
+        b.move()
+    for b in background:
+        if b.x < -288:
+            background.pop(background.index(b))
         b.move()
     plant.move()
 
